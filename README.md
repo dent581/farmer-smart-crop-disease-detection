@@ -1,73 +1,72 @@
 # 🌿 FarmAdvisor AI — Crop Disease Detection System
 
-A complete production-ready Flask web application for AI-powered crop disease detection and agricultural advisory.
+An AI-powered crop disease detection and advisory system built with Python, CNN, and Flask. Upload a plant leaf image to instantly detect diseases and get farming advice.
 
-## 🚀 Quick Start
+---
 
-```bash
-# 1. Install dependencies
-pip install -r requirements.txt
+## 🚀 Features
 
-# 2. Create demo CNN model (no dataset needed for testing)
-python train_image_model.py --demo
+- 🔍 **Image-based Disease Detection** — Upload a leaf image and get instant CNN-based prediction
+- 💬 **Text Advisory System** — Ask farming questions and get AI-powered answers (TF-IDF + Random Forest)
+- 🌐 **Flask Web App** — Clean, responsive web interface
+- 🗃️ **History Tracking** — View past scans and queries stored in local database
+- 📊 **21 Disease Classes** across 13 crops supported
 
-# 3. Train NLP advisory model
-python train_text_model.py
+---
 
-# 4. Launch the application
-python app.py
+## 🌱 Supported Crops & Diseases (38 Classes)
 
-# Visit: http://127.0.0.1:5000
-```
+| Crop | Diseases Detected |
+|------|-------------------|
+| Apple | Apple Scab, Black Rot, Cedar Apple Rust, Healthy |
+| Blueberry | Healthy |
+| Cherry | Healthy, Powdery Mildew |
+| Corn (Maize) | Cercospora Leaf Spot, Common Rust, Northern Leaf Blight, Healthy |
+| Grape | Black Rot, Esca (Black Measles), Leaf Blight, Healthy |
+| Orange | Haunglongbing (Citrus Greening) |
+| Peach | Bacterial Spot, Healthy |
+| Pepper (Bell) | Bacterial Spot, Healthy |
+| Potato | Early Blight, Late Blight, Healthy |
+| Raspberry | Healthy |
+| Soybean | Healthy |
+| Squash | Powdery Mildew |
+| Strawberry | Leaf Scorch, Healthy |
+| Tomato | Bacterial Spot, Early Blight, Late Blight, Leaf Mold, Septoria Leaf Spot, Spider Mites, Target Spot, Mosaic Virus, Yellow Leaf Curl Virus, Healthy |
+
+---
+
+## 🛠 Tech Stack
+
+- **Backend:** Python 3, Flask
+- **ML Model:** CNN (Convolutional Neural Network) — TensorFlow/Keras
+- **Text Advisory:** TF-IDF Vectorizer + Random Forest Classifier
+- **Database:** SQLite
+- **Frontend:** HTML, CSS, JavaScript
+
+---
 
 ## 📁 Project Structure
 
 ```
-farmer_advisory/
-├── app.py                   # Main Flask application
-├── database.py              # SQLite persistence layer
-├── train_image_model.py     # CNN training script
-├── train_text_model.py      # NLP model training script
-├── requirements.txt
+farmer-smart-crop-disease-detection/
+├── app.py                  # Main Flask application
+├── database.py             # Database setup and queries
+├── train_image_model.py    # CNN model training script
+├── train_text_model.py     # Text advisory model training
+├── create_demo.py          # Demo data creation
 ├── models/
-│   ├── plant_disease_model.h5   # CNN model (after training)
-│   ├── text_model.pkl           # NLP model (after training)
-│   ├── class_names.json         # 21 disease class labels
-│   └── text_labels.json
-├── static/
-│   ├── css/style.css
-│   ├── js/main.js
-│   └── uploads/             # Uploaded leaf images
-├── templates/
-│   ├── index.html           # Home Dashboard
-│   ├── upload.html          # Image Scan page
-│   ├── query.html           # Ask AI page
-│   └── history.html         # History page
-└── farmer_advisory.db       # SQLite database
+│   ├── plant_disease_model.h5   # Trained CNN model
+│   ├── class_names.json         # Disease class labels
+│   ├── text_model.pkl           # Text advisory model
+│   └── text_labels.json         # Advisory labels
+├── templates/              # HTML pages
+├── static/                 # CSS and JS files
+└── requirements.txt
 ```
 
-## 🧠 Training with Real Dataset
+---
 
-Download the **PlantVillage dataset** from Kaggle, then:
-
-```bash
-python train_image_model.py --data_dir /path/to/plantvillage --epochs 25
-```
-
-The script uses **MobileNetV2 transfer learning** with two phases:
-1. Train classifier head (frozen backbone)
-2. Fine-tune top 40 layers
-
-## 🌾 Supported Disease Classes (21)
-
-| Crop    | Diseases |
-|---------|----------|
-| Apple   | Apple Scab, Black Rot, Cedar Apple Rust, Healthy |
-| Corn    | Gray Leaf Spot, Common Rust, Northern Leaf Blight, Healthy |
-| Potato  | Early Blight, Late Blight, Healthy |
-| Tomato  | Bacterial Spot, Early Blight, Late Blight, Leaf Mold, Septoria Leaf Spot, Spider Mites, Target Spot, TYLCV, Mosaic Virus, Healthy |
-
-## 🔧 API Endpoints
+## ⚙️ API Endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
@@ -79,3 +78,50 @@ The script uses **MobileNetV2 transfer learning** with two phases:
 | `/history` | GET | History page |
 | `/api/history/clear` | POST | Clear all records |
 | `/api/status` | GET | Model status JSON |
+
+---
+
+## ▶️ How to Run
+
+**1. Clone the repository**
+```bash
+git clone https://github.com/dent581/farmer-smart-crop-disease-detection.git
+cd farmer-smart-crop-disease-detection
+```
+
+**2. Install dependencies**
+```bash
+pip install -r requirements.txt
+```
+
+**3. Run the app**
+```bash
+python app.py
+```
+
+**4. Open in browser**
+```
+http://localhost:5000
+```
+
+---
+
+## 📋 Requirements
+
+- Python 3.8+
+- TensorFlow
+- Flask
+- scikit-learn
+- OpenCV
+- Pillow
+
+Install all with:
+```bash
+pip install -r requirements.txt
+```
+---
+Built with ❤️ for farmers
+
+## 📄 License
+
+MIT License
