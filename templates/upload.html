@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Image Scan — FarmAdvisor AI</title>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>"/>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spin"></div>
+  <p class="load-t">Analysing Leaf…</p>
+  <p class="load-s">Running CNN inference · 224×224 RGB</p>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <a class="nav-brand" href="/">
+    <div class="brand-icon">🌿</div>
+    <div class="brand-name">
+      <strong>FarmAdvisor AI</strong>
+      <span>Crop Intelligence Platform</span>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/"><span class="nav-icon">🏡</span> <span>Home</span></a></li>
+    <li><a href="/scan" class="active"><span class="nav-icon">📷</span> <span>Image Scan</span></a></li>
+    <li><a href="/ask"><span class="nav-icon">💬</span> <span>Ask AI</span></a></li>
+    <li><a href="/history"><span class="nav-icon">📋</span> <span>History</span></a></li>
+  </ul>
+  <div class="status-pill {% if not model_loaded %}warn{% endif %}">
+    <div class="dot-pulse {% if not model_loaded %}warn{% endif %}"></div>
+    {% if model_loaded %}AI Ready{% else %}Model Offline{% endif %}
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="page-hero">
+  <div class="hero-tag">🔬 Deep Learning Analysis</div>
+  <h1 class="hero-h1">Crop <em>Image Scan</em></h1>
+  <p class="hero-sub">Upload a close-up photo of your crop leaf for instant AI-powered disease detection, severity assessment, and treatment recommendations.</p>
+</section>
+
+<main class="container">
+
+  {% if not model_loaded %}
+  <div class="model-banner">
+    <div class="bico">⚠️</div>
+    <div>
+      <h4>CNN Model Not Loaded</h4>
+      <p>Run <code>python train_image_model.py --demo</code> first to generate the model file, then restart the server.
+         The scan will still run but results will be random until you train with real data.</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <div id="alert-box" class="alert"></div>
+
+  <div class="upload-panel">
+
+    <!-- Drop zone -->
+    <div class="dropzone" id="drop-zone">
+      <div class="dz-icon">🍃</div>
+      <p class="dz-title">Drop your leaf photo here</p>
+      <p class="dz-sub">or click to browse files from your device</p>
+      <div class="fmt-tags">
+        <span class="fmt-tag">JPG</span>
+        <span class="fmt-tag">JPEG</span>
+        <span class="fmt-tag">PNG</span>
+        <span class="fmt-tag">WebP</span>
+        <span class="fmt-tag">Max 16 MB</span>
+      </div>
+    </div>
+
+    <input type="file" id="file-input" accept=".jpg,.jpeg,.png,.webp" style="display:none"/>
+
+    <!-- Preview -->
+    <div class="preview-wrap" id="prev-wrap">
+      <img class="preview-img" id="prev-img" alt="Preview"/>
+      <div class="preview-overlay">
+        <button class="preview-change" id="change-btn">Change Image</button>
+      </div>
+    </div>
+
+    <!-- Camera -->
+    <div style="margin-bottom:1.2rem">
+      <button class="btn btn-ghost btn-sm" id="cam-open" type="button">📸 Use Camera</button>
+    </div>
+
+    <div class="camera-panel hidden" id="cam-panel">
+      <video id="cam-vid" autoplay playsinline></video>
+      <div class="cam-ctrls">
+        <button class="btn btn-primary btn-sm" id="cam-capture" type="button">📷 Capture</button>
+        <button class="btn btn-ghost btn-sm" id="cam-close" type="button">✕ Close</button>
+      </div>
+    </div>
+
+    <!-- Scan button -->
+    <button class="btn btn-primary btn-w" id="scan-btn" disabled>
+      🔬 Analyse Disease
+    </button>
+
+    <!-- Tips -->
+    <div style="margin-top:1.2rem; padding:1rem 1.2rem; background:var(--foam); border-radius:var(--r-md); border:1px solid var(--pale)">
+      <p style="font-size:.8rem; color:var(--stone); line-height:1.7">
+        📌 <strong>For best results:</strong> Photograph a single leaf with the affected area clearly visible.
+        Use natural daylight. Keep the leaf flat and the camera parallel to it.
+        Avoid shadows and blurry images.
+      </p>
+    </div>
+
+  </div><!-- /upload-panel -->
+
+  <!-- ── Result ────────────────────────────────── -->
+  <div class="result-wrap" id="result-wrap">
+
+    <!-- Model-not-loaded inline warning -->
+    <div class="model-warn-inline" id="model-warn-inline">
+      <div class="wi">⚠️</div>
+      <div>
+        <h4>Model Not Loaded — Demo Mode</h4>
+        <p>Results below are random. Run <code>python train_image_model.py --demo</code> and restart the server for a working model.</p>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div class="result-head">
+      <div>
+        <p id="res-disease" class="result-disease">—</p>
+        <p id="res-desc" class="result-desc">—</p>
+      </div>
+      <span id="res-sev" class="sev-badge Unknown">Unknown</span>
+    </div>
+
+    <!-- Confidence -->
+    <div class="conf-band">
+      <div class="conf-row">
+        <span class="conf-label">Confidence Score</span>
+        <span class="conf-pct" id="conf-pct">0%</span>
+      </div>
+      <div class="conf-track">
+        <div class="conf-fill" id="conf-fill"></div>
+      </div>
+      <p class="conf-meta" id="cnn-info">CNN • Input: 224×224 RGB</p>
+    </div>
+
+    <!-- Treatment cards -->
+    <div class="treat-grid">
+
+      <div class="treat-card">
+        <div class="treat-hd">
+          <div class="treat-ico f">🌱</div>
+          <h4>Fertilizer</h4>
+        </div>
+        <p id="treat-fertilizer">—</p>
+      </div>
+
+      <div class="treat-card">
+        <div class="treat-hd">
+          <div class="treat-ico p">🧪</div>
+          <h4>Pesticide</h4>
+        </div>
+        <p id="treat-pesticide">—</p>
+      </div>
+
+      <div class="treat-card">
+        <div class="treat-hd">
+          <div class="treat-ico i">💧</div>
+          <h4>Irrigation</h4>
+        </div>
+        <p id="treat-irrigation">—</p>
+      </div>
+
+      <div class="treat-card">
+        <div class="treat-hd">
+          <div class="treat-ico v">🛡️</div>
+          <h4>Prevention Steps</h4>
+        </div>
+        <ul id="treat-prevention"></ul>
+      </div>
+
+    </div><!-- /treat-grid -->
+  </div><!-- /result-wrap -->
+
+</main>
+
+<footer>
+  <strong>FarmAdvisor AI</strong> &nbsp;·&nbsp;
+  CNN MobileNetV2 · 21 PlantVillage Classes · 224×224 RGB
+</footer>
+
+<script src="/static/js/main.js"></script>
+{% include 'chatbot.html' %}
+</body>
+</html>

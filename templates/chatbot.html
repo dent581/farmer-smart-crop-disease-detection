@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chatbot Widget</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      #chat-fab {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        width: 58px;
+        height: 58px;
+        background: #2e7d32;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+        z-index: 99999;
+        transition: transform 0.2s;
+        border: none;
+      }
+      #chat-fab:hover {
+        transform: scale(1.1);
+      }
+
+      #chat-widget {
+        position: fixed;
+        bottom: 100px;
+        right: 28px;
+        width: 360px;
+        height: 520px;
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
+        display: none;
+        flex-direction: column;
+        z-index: 99998;
+        overflow: hidden;
+        animation: slideUp 0.25s ease;
+      }
+
+      #chat-widget.open {
+        display: flex;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .cw-header {
+        background: linear-gradient(135deg, #2e7d32, #43a047);
+        color: white;
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+      }
+
+      .cw-avatar {
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+      }
+
+      .cw-title {
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .cw-subtitle {
+        font-size: 11px;
+        opacity: 0.85;
+      }
+
+      .cw-close {
+        margin-left: auto;
+        background: none;
+        border: none;
+        color: white;
+        font-size: 20px;
+        cursor: pointer;
+        opacity: 0.8;
+        line-height: 1;
+      }
+      .cw-close:hover {
+        opacity: 1;
+      }
+
+      .cw-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 14px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: #f4f6f4;
+      }
+
+      .cw-msg {
+        display: flex;
+        gap: 7px;
+        max-width: 90%;
+        animation: fadeMsg 0.2s ease;
+      }
+
+      @keyframes fadeMsg {
+        from {
+          opacity: 0;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .cw-msg.bot {
+        align-self: flex-start;
+      }
+      .cw-msg.user {
+        align-self: flex-end;
+        flex-direction: row-reverse;
+      }
+
+      .cw-bubble {
+        padding: 9px 13px;
+        border-radius: 14px;
+        font-size: 13px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .cw-msg.bot .cw-bubble {
+        background: #ffffff;
+        color: #1a1a1a;
+        border: 1px solid #e0e0e0;
+        border-bottom-left-radius: 3px;
+      }
+
+      .cw-msg.user .cw-bubble {
+        background: #2e7d32;
+        color: #ffffff;
+        border-bottom-right-radius: 3px;
+      }
+
+      .cw-icon {
+        width: 28px;
+        height: 28px;
+        background: #e8f5e9;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+
+      .cw-typing {
+        display: flex;
+        gap: 7px;
+        align-items: flex-start;
+      }
+
+      .cw-dots {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        padding: 10px 14px;
+        border-radius: 14px;
+        border-bottom-left-radius: 3px;
+        display: flex;
+        gap: 4px;
+        align-items: center;
+      }
+
+      .cw-dots span {
+        width: 6px;
+        height: 6px;
+        background: #9e9e9e;
+        border-radius: 50%;
+        animation: bounce 1.2s infinite;
+      }
+      .cw-dots span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .cw-dots span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes bounce {
+        0%,
+        60%,
+        100% {
+          transform: translateY(0);
+        }
+        30% {
+          transform: translateY(-5px);
+        }
+      }
+
+      .cw-quick {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 5px;
+        padding: 8px 12px 4px;
+        background: #f4f6f4;
+        flex-shrink: 0;
+      }
+
+      .cw-qbtn {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #a5d6a7;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        cursor: pointer;
+        transition: background 0.2s;
+        white-space: nowrap;
+      }
+      .cw-qbtn:hover {
+        background: #c8e6c9;
+      }
+
+      .cw-input-row {
+        display: flex;
+        padding: 10px 12px;
+        gap: 8px;
+        background: #fff;
+        border-top: 1px solid #e8e8e8;
+        flex-shrink: 0;
+        align-items: flex-end;
+      }
+
+      .cw-input-row textarea {
+        flex: 1;
+        border: 1px solid #ddd;
+        border-radius: 18px;
+        padding: 8px 14px;
+        font-size: 13px;
+        font-family: "Segoe UI", sans-serif;
+        resize: none;
+        outline: none;
+        max-height: 80px;
+        line-height: 1.4;
+        color: #1a1a1a;
+      }
+      .cw-input-row textarea:focus {
+        border-color: #66bb6a;
+      }
+
+      .cw-send {
+        width: 36px;
+        height: 36px;
+        background: #2e7d32;
+        border: none;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: background 0.2s;
+      }
+      .cw-send:hover {
+        background: #1b5e20;
+      }
+      .cw-send svg {
+        width: 16px;
+        height: 16px;
+        fill: white;
+      }
+
+      #chat-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        background: #e53935;
+        color: white;
+        border-radius: 50%;
+        width: 18px;
+        height: 18px;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- FAB Button -->
+    <button id="chat-fab" onclick="toggleChat()" title="Crop Advisory Chatbot">
+      🌿
+      <span id="chat-badge">1</span>
+    </button>
+
+    <!-- Chat Widget -->
+    <div id="chat-widget">
+      <div class="cw-header">
+        <div class="cw-avatar">🌿</div>
+        <div>
+          <div class="cw-title">Crop Advisory Assistant</div>
+          <div class="cw-subtitle">🟢 Online — Ask me anything</div>
+        </div>
+        <button class="cw-close" onclick="toggleChat()">✕</button>
+      </div>
+
+      <div class="cw-messages" id="cwMessages">
+        <div class="cw-msg bot">
+          <div class="cw-icon">🌿</div>
+          <div class="cw-bubble">
+            Hello! 👋 I am your Smart Crop Advisory Assistant. Ask me about: -
+            Crop diseases & treatments - Fertilizers & nutrients - Irrigation
+            methods - Pest management - Crop growing tips
+          </div>
+        </div>
+      </div>
+
+      <div class="cw-quick" id="cwQuick">
+        <button
+          class="cw-qbtn"
+          onclick="sendQ('Tomato early blight treatment')"
+        >
+          🍅 Tomato blight
+        </button>
+        <button class="cw-qbtn" onclick="sendQ('How to grow rice?')">
+          🌾 Rice farming
+        </button>
+        <button class="cw-qbtn" onclick="sendQ('How to control aphids?')">
+          🐛 Aphid control
+        </button>
+        <button class="cw-qbtn" onclick="sendQ('What fertilizer for wheat?')">
+          🌿 Wheat fertilizer
+        </button>
+      </div>
+
+      <div class="cw-input-row">
+        <textarea
+          id="cwInput"
+          placeholder="Ask about crops, diseases..."
+          rows="1"
+          onkeydown="handleKey(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+        <button class="cw-send" onclick="sendMsg()">
+          <svg viewBox="0 0 24 24">
+            <path d="M2 21l21-9L2 3v7l15 2-15 2z" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const msgs = document.getElementById("cwMessages");
+      const inp = document.getElementById("cwInput");
+      let isOpen = false;
+
+      function toggleChat() {
+        isOpen = !isOpen;
+        const w = document.getElementById("chat-widget");
+        const badge = document.getElementById("chat-badge");
+        if (isOpen) {
+          w.classList.add("open");
+          badge.style.display = "none";
+          inp.focus();
+        } else {
+          w.classList.remove("open");
+        }
+      }
+
+      function autoResize(el) {
+        el.style.height = "auto";
+        el.style.height = Math.min(el.scrollHeight, 80) + "px";
+      }
+
+      function handleKey(e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMsg();
+        }
+      }
+
+      function appendMsg(text, sender) {
+        const d = document.createElement("div");
+        d.className = `cw-msg ${sender}`;
+        if (sender === "bot") {
+          d.innerHTML = `<div class="cw-icon">🌿</div><div class="cw-bubble">${fmt(text)}</div>`;
+        } else {
+          d.innerHTML = `<div class="cw-bubble">${esc(text)}</div>`;
+        }
+        msgs.appendChild(d);
+        msgs.scrollTop = msgs.scrollHeight;
+      }
+
+      function fmt(t) {
+        return t
+          .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+          .replace(/\n/g, "<br>");
+      }
+
+      function esc(t) {
+        return t
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      function showTyping() {
+        const d = document.createElement("div");
+        d.className = "cw-typing";
+        d.id = "cwTyping";
+        d.innerHTML = `<div class="cw-icon">🌿</div><div class="cw-dots"><span></span><span></span><span></span></div>`;
+        msgs.appendChild(d);
+        msgs.scrollTop = msgs.scrollHeight;
+      }
+
+      function removeTyping() {
+        const el = document.getElementById("cwTyping");
+        if (el) el.remove();
+      }
+
+      function sendQ(text) {
+        inp.value = text;
+        sendMsg();
+        document.getElementById("cwQuick").style.display = "none";
+      }
+
+      async function sendMsg() {
+        const msg = inp.value.trim();
+        if (!msg) return;
+        appendMsg(msg, "user");
+        inp.value = "";
+        inp.style.height = "auto";
+        document.getElementById("cwQuick").style.display = "none";
+        showTyping();
+        try {
+          const res = await fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: msg }),
+          });
+          const data = await res.json();
+          removeTyping();
+          appendMsg(data.response, "bot");
+        } catch {
+          removeTyping();
+          appendMsg("Something went wrong. Please try again.", "bot");
+        }
+      }
+    </script>
+  </body>
+</html>

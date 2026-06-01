@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Farmer Advisory System — Home</title>
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>"
+    />
+  </head>
+  <body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+      <div class="spin"></div>
+      <p class="load-t">Analysing…</p>
+      <p class="load-s">Running AI inference</p>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+      <a class="nav-brand" href="/">
+        <div class="brand-icon">🌿</div>
+        <div class="brand-name">
+          <strong>FarmAdvisor AI</strong>
+          <span>Crop Intelligence Platform</span>
+        </div>
+      </a>
+      <ul class="nav-links">
+        <li>
+          <a href="/" class="active"
+            ><span class="nav-icon">🏡</span> <span>Home</span></a
+          >
+        </li>
+        <li>
+          <a href="/scan"
+            ><span class="nav-icon">📷</span> <span>Image Scan</span></a
+          >
+        </li>
+        <li>
+          <a href="/ask"
+            ><span class="nav-icon">💬</span> <span>Ask AI</span></a
+          >
+        </li>
+        <li>
+          <a href="/history"
+            ><span class="nav-icon">📋</span> <span>History</span></a
+          >
+        </li>
+      </ul>
+      <div class="status-pill {% if not model_loaded %}warn{% endif %}">
+        <div class="dot-pulse {% if not model_loaded %}warn{% endif %}"></div>
+        {% if model_loaded %}AI Ready{% else %}Model Offline{% endif %}
+      </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="page-hero">
+      <div class="hero-tag">🌾 AI-Powered Agricultural Intelligence</div>
+      <h1 class="hero-h1">
+        Smart <em>Crop Disease</em><br />Detection & Advisory
+      </h1>
+      <p class="hero-sub">
+        Upload a leaf photo for instant AI-powered disease diagnosis, or ask our
+        NLP advisory engine your farming questions. Powered by CNN deep learning
+        on the PlantVillage dataset.
+      </p>
+    </section>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-ico g">📊</div>
+        <div>
+          <div class="stat-n" data-target="{{ stats.total_scans }}">0</div>
+          <div class="stat-lbl">Total Scans</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-ico c">🦠</div>
+        <div>
+          <div class="stat-n" data-target="{{ stats.diseases_detected }}">
+            0
+          </div>
+          <div class="stat-lbl">Diseases Detected</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-ico g">✅</div>
+        <div>
+          <div class="stat-n" data-target="{{ stats.healthy_plants }}">0</div>
+          <div class="stat-lbl">Healthy Plants</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-ico b">💬</div>
+        <div>
+          <div class="stat-n" data-target="{{ stats.total_queries }}">0</div>
+          <div class="stat-lbl">AI Queries</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main -->
+    <main class="container">
+      {% if not model_loaded %}
+      <div class="model-banner">
+        <div class="bico">⚠️</div>
+        <div>
+          <h4>CNN Model Not Loaded</h4>
+          <p>
+            Run <code>python train_image_model.py --demo</code> to create a
+            model, then restart <code>python app.py</code>. For production
+            accuracy, train with the full PlantVillage dataset.
+          </p>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Feature cards -->
+      <h2 class="sec-title">🛠 Platform Features</h2>
+      <div class="feature-grid">
+        <a class="feat-card" href="/scan">
+          <div class="feat-ico-wrap">📷</div>
+          <h3>Image Disease Scan</h3>
+          <p>
+            Upload a crop leaf photo. Our CNN model (MobileNetV2) classifies 21
+            plant diseases from the PlantVillage dataset with high accuracy.
+          </p>
+          <span class="feat-link">Start scanning →</span>
+        </a>
+
+        <a class="feat-card" href="/ask">
+          <div class="feat-ico-wrap">🤖</div>
+          <h3>Ask AI Advisory</h3>
+          <p>
+            Type any farming question — leaf yellowing, pest management,
+            fertilizer schedule — and get expert NLP-powered advisory responses.
+          </p>
+          <span class="feat-link">Ask a question →</span>
+        </a>
+
+        <a class="feat-card" href="/history">
+          <div class="feat-ico-wrap">📋</div>
+          <h3>Prediction History</h3>
+          <p>
+            All scans and queries are logged to an SQLite database. Review past
+            diagnoses, confidence scores, and recommendations anytime.
+          </p>
+          <span class="feat-link">View history →</span>
+        </a>
+
+        <div class="feat-card">
+          <div class="feat-ico-wrap">🧪</div>
+          <h3>Treatment Engine</h3>
+          <p>
+            Every detected disease comes with a complete treatment plan:
+            fertilizer, pesticide, irrigation, and prevention recommendations.
+          </p>
+          <span class="feat-link" style="color: var(--stone)">Built-in →</span>
+        </div>
+      </div>
+
+      <!-- Recent activity -->
+      {% if recent %}
+      <h2 class="sec-title">🕐 Recent Activity</h2>
+      <div class="activity-grid">
+        {% for r in recent %}
+        <div class="act-card">
+          {% if r.image_path %}
+          <img
+            class="act-thumb"
+            src="/{{ r.image_path }}"
+            alt="{{ r.disease }}"
+            onerror="
+              this.style.display = 'none';
+              this.nextElementSibling.style.display = 'flex';
+            "
+          />
+          <div class="act-thumb-placeholder" style="display: none">🍃</div>
+          {% else %}
+          <div class="act-thumb-placeholder">💬</div>
+          {% endif %}
+          <div class="act-body">
+            <div class="act-disease">{{ r.disease or '—' }}</div>
+            <div class="act-meta">
+              {% if r.confidence %}{{ "%.1f"|format(r.confidence) }}% confidence
+              · {% endif %} {{ r.timestamp or '' }}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- How it works -->
+      <h2 class="sec-title mt-3">⚙️ How It Works</h2>
+      <div class="feature-grid">
+        <div class="feat-card" style="pointer-events: none">
+          <div class="feat-ico-wrap">1️⃣</div>
+          <h3>Upload Leaf Image</h3>
+          <p>
+            Drag & drop or click to upload a JPG/PNG/WebP photo of the affected
+            crop leaf. Supports real-time camera capture too.
+          </p>
+        </div>
+        <div class="feat-card" style="pointer-events: none">
+          <div class="feat-ico-wrap">2️⃣</div>
+          <h3>AI Preprocessing</h3>
+          <p>
+            Image is compressed, resized to 224×224 pixels, normalised, and fed
+            into the CNN pipeline.
+          </p>
+        </div>
+        <div class="feat-card" style="pointer-events: none">
+          <div class="feat-ico-wrap">3️⃣</div>
+          <h3>CNN Classification</h3>
+          <p>
+            MobileNetV2-based model classifies among 21 PlantVillage disease
+            classes and returns confidence probabilities.
+          </p>
+        </div>
+        <div class="feat-card" style="pointer-events: none">
+          <div class="feat-ico-wrap">4️⃣</div>
+          <h3>Treatment Plan</h3>
+          <p>
+            Disease-specific recommendations for fertilizer, pesticide,
+            irrigation, and prevention are displayed instantly.
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <strong>FarmAdvisor AI</strong> &nbsp;·&nbsp; Built with Flask ·
+      TensorFlow · scikit-learn &nbsp;·&nbsp; 21 crop disease classes ·
+      PlantVillage dataset
+    </footer>
+
+    <script src="/static/js/main.js"></script>
+    {% include 'chatbot.html' %}
+  </body>
+</html>

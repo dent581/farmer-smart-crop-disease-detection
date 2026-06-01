@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ask AI — FarmAdvisor AI</title>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>"/>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spin"></div>
+  <p class="load-t">Consulting AI…</p>
+  <p class="load-s">NLP classification in progress</p>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <a class="nav-brand" href="/">
+    <div class="brand-icon">🌿</div>
+    <div class="brand-name">
+      <strong>FarmAdvisor AI</strong>
+      <span>Crop Intelligence Platform</span>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/"><span class="nav-icon">🏡</span> <span>Home</span></a></li>
+    <li><a href="/scan"><span class="nav-icon">📷</span> <span>Image Scan</span></a></li>
+    <li><a href="/ask" class="active"><span class="nav-icon">💬</span> <span>Ask AI</span></a></li>
+    <li><a href="/history"><span class="nav-icon">📋</span> <span>History</span></a></li>
+  </ul>
+  <div class="status-pill {% if not model_loaded %}warn{% endif %}">
+    <div class="dot-pulse {% if not model_loaded %}warn{% endif %}"></div>
+    {% if model_loaded %}AI Ready{% else %}Model Offline{% endif %}
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="page-hero">
+  <div class="hero-tag">🤖 NLP Advisory Engine</div>
+  <h1 class="hero-h1">Ask the <em>AI Advisor</em></h1>
+  <p class="hero-sub">Ask any farming or crop disease question in plain language. Our TF-IDF + RandomForest NLP model classifies your query and delivers expert agricultural guidance.</p>
+</section>
+
+<main class="container">
+
+  <div class="query-panel">
+
+    <!-- Suggestion chips -->
+    <p style="font-size:.82rem; font-weight:600; color:var(--stone); margin-bottom:.75rem; text-transform:uppercase; letter-spacing:.5px">
+      💡 Quick questions
+    </p>
+    <div class="chips">
+      <span class="chip" data-q="Why are my tomato leaves turning yellow?">Yellow tomato leaves</span>
+      <span class="chip" data-q="Brown spots on my potato plant leaves">Brown leaf spots</span>
+      <span class="chip" data-q="How to control aphids on vegetables?">Aphid control</span>
+      <span class="chip" data-q="What fertilizer should I apply for maize?">Fertilizer for maize</span>
+      <span class="chip" data-q="My tomato plants are wilting despite irrigation">Plant wilting</span>
+      <span class="chip" data-q="How often should I irrigate tomatoes?">Irrigation schedule</span>
+      <span class="chip" data-q="Fungal disease spreading in my field">Fungal disease</span>
+      <span class="chip" data-q="Whiteflies infesting my crop leaves">Whitefly infestation</span>
+    </div>
+
+    <!-- Query form -->
+    <form id="ask-form">
+      <div class="query-ta-wrap">
+        <textarea
+          id="query-ta"
+          class="query-ta"
+          maxlength="500"
+          placeholder="Type your farming question here…&#10;e.g. Why are my tomato leaves turning yellow and curling?"
+        ></textarea>
+        <span class="char-ct" id="char-ct">0/500</span>
+      </div>
+      <button class="btn btn-primary btn-w" type="submit">
+        🤖 Get AI Advisory
+      </button>
+    </form>
+
+    <!-- AI Response card -->
+    <div class="ai-card" id="ai-card">
+      <div class="ai-card-head">
+        <div class="ai-avatar">🌾</div>
+        <div>
+          <p class="ai-title" id="ai-title">Advisory Response</p>
+          <p style="font-size:.72rem; color:rgba(255,255,255,.6); margin-top:2px">
+            TF-IDF + RandomForest NLP Model
+          </p>
+        </div>
+      </div>
+      <div class="ai-body" id="ai-body"></div>
+    </div>
+
+  </div><!-- /query-panel -->
+
+  <!-- Coverage info -->
+  <div style="margin-top:2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1.2rem">
+
+    <div style="background:#fff; border:1px solid rgba(82,183,136,.1); border-radius:var(--r-md); padding:1.4rem; box-shadow:var(--shadow-xs)">
+      <div style="font-size:1.5rem; margin-bottom:.6rem">🍃</div>
+      <h4 style="font-family:'Fraunces',serif; font-size:1rem; color:var(--forest); margin-bottom:.4rem">Disease Queries</h4>
+      <p style="font-size:.83rem; color:var(--moss); line-height:1.6">Ask about blight, rust, mildew, mosaic virus, leaf spot, and 20+ other crop diseases.</p>
+    </div>
+
+    <div style="background:#fff; border:1px solid rgba(82,183,136,.1); border-radius:var(--r-md); padding:1.4rem; box-shadow:var(--shadow-xs)">
+      <div style="font-size:1.5rem; margin-bottom:.6rem">🌱</div>
+      <h4 style="font-family:'Fraunces',serif; font-size:1rem; color:var(--forest); margin-bottom:.4rem">Nutrition & Fertilizer</h4>
+      <p style="font-size:.83rem; color:var(--moss); line-height:1.6">NPK recommendations, micronutrient deficiencies, organic fertilizer guidance, and application timing.</p>
+    </div>
+
+    <div style="background:#fff; border:1px solid rgba(82,183,136,.1); border-radius:var(--r-md); padding:1.4rem; box-shadow:var(--shadow-xs)">
+      <div style="font-size:1.5rem; margin-bottom:.6rem">🐛</div>
+      <h4 style="font-family:'Fraunces',serif; font-size:1rem; color:var(--forest); margin-bottom:.4rem">Pest Management</h4>
+      <p style="font-size:.83rem; color:var(--moss); line-height:1.6">IPM strategies for aphids, whiteflies, caterpillars, mites, borers, and other common crop pests.</p>
+    </div>
+
+    <div style="background:#fff; border:1px solid rgba(82,183,136,.1); border-radius:var(--r-md); padding:1.4rem; box-shadow:var(--shadow-xs)">
+      <div style="font-size:1.5rem; margin-bottom:.6rem">💧</div>
+      <h4 style="font-family:'Fraunces',serif; font-size:1rem; color:var(--forest); margin-bottom:.4rem">Water Management</h4>
+      <p style="font-size:.83rem; color:var(--moss); line-height:1.6">Irrigation schedules, drought management, waterlogging, drip vs flood irrigation, and mulching techniques.</p>
+    </div>
+
+  </div>
+
+</main>
+
+<footer>
+  <strong>FarmAdvisor AI</strong> &nbsp;·&nbsp;
+  NLP Advisory · TF-IDF + RandomForest · 8 Query Categories
+</footer>
+
+<script src="/static/js/main.js"></script>
+{% include 'chatbot.html' %}
+</body>
+</html>

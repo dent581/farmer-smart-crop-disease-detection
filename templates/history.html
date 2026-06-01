@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>History — FarmAdvisor AI</title>
+  <link rel="stylesheet" href="/static/css/style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>"/>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <a class="nav-brand" href="/">
+    <div class="brand-icon">🌿</div>
+    <div class="brand-name">
+      <strong>FarmAdvisor AI</strong>
+      <span>Crop Intelligence Platform</span>
+    </div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="/"><span class="nav-icon">🏡</span> <span>Home</span></a></li>
+    <li><a href="/scan"><span class="nav-icon">📷</span> <span>Image Scan</span></a></li>
+    <li><a href="/ask"><span class="nav-icon">💬</span> <span>Ask AI</span></a></li>
+    <li><a href="/history" class="active"><span class="nav-icon">📋</span> <span>History</span></a></li>
+  </ul>
+  <div class="status-pill {% if not model_loaded %}warn{% endif %}">
+    <div class="dot-pulse {% if not model_loaded %}warn{% endif %}"></div>
+    {% if model_loaded %}AI Ready{% else %}Model Offline{% endif %}
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="page-hero">
+  <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem">
+    <div>
+      <div class="hero-tag">📋 SQLite Database</div>
+      <h1 class="hero-h1">Prediction <em>History</em></h1>
+      <p class="hero-sub">Complete log of all image scans and AI advisory queries, stored in <code style="background:var(--foam);padding:2px 7px;border-radius:5px;font-size:.85em">farmer_advisory.db</code>.</p>
+    </div>
+    {% if records %}
+    <div style="padding-top:3.5rem">
+      <button class="btn btn-danger" id="clear-btn">🗑️ Clear All History</button>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<main class="container">
+
+  <div class="history-wrap">
+    {% if records %}
+    <div class="tbl-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Type</th>
+            <th>Image</th>
+            <th>Disease / Category</th>
+            <th>Confidence</th>
+            <th>Query Text</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in records %}
+          <tr>
+            <td style="color:var(--stone); font-size:.78rem">{{ r.id }}</td>
+            <td>
+              {% if r.image_path %}
+                <span class="type-pill scan">📷 Scan</span>
+              {% else %}
+                <span class="type-pill query">💬 Query</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if r.image_path %}
+                <img class="tbl-thumb" src="/{{ r.image_path }}" alt="leaf"
+                     onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 40 40%22><text y=%22.9em%22 font-size=%2230%22>🍃</text></svg>'">
+              {% else %}
+                <span style="font-size:1.6rem">💬</span>
+              {% endif %}
+            </td>
+            <td class="td-disease">{{ r.disease or '—' }}</td>
+            <td class="td-conf">
+              {% if r.confidence is not none %}
+                {{ "%.1f"|format(r.confidence) }}%
+              {% else %}
+                <span style="color:var(--stone)">—</span>
+              {% endif %}
+            </td>
+            <td style="max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">
+              {{ r.query_text or '—' }}
+            </td>
+            <td style="white-space:nowrap; font-size:.78rem; color:var(--stone)">
+              {{ r.timestamp or '—' }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div><!-- /tbl-scroll -->
+
+    <!-- Summary bar -->
+    <div style="padding:1rem 1.4rem; background:var(--foam); border-top:1px solid rgba(82,183,136,.1); font-size:.82rem; color:var(--stone)">
+      {{ records|length }} record(s) total &nbsp;·&nbsp;
+      {{ records|selectattr('image_path')|list|length }} image scan(s) &nbsp;·&nbsp;
+      {{ records|rejectattr('image_path')|list|length }} AI quer(y/ies)
+    </div>
+
+    {% else %}
+    <div class="empty-tbl">
+      <div class="ei">🌾</div>
+      <h3>No history yet</h3>
+      <p>Scan a crop image or ask the AI a farming question to get started.</p>
+      <div style="display:flex; gap:1rem; justify-content:center; margin-top:1.4rem; flex-wrap:wrap">
+        <a href="/scan" class="btn btn-primary">📷 Start Scanning</a>
+        <a href="/ask" class="btn btn-outline">💬 Ask AI</a>
+      </div>
+    </div>
+    {% endif %}
+  </div><!-- /history-wrap -->
+
+</main>
+
+<footer>
+  <strong>FarmAdvisor AI</strong> &nbsp;·&nbsp;
+  History stored in SQLite · farmer_advisory.db
+</footer>
+
+<script src="/static/js/main.js"></script>
+{% include 'chatbot.html' %}
+</body>
+</html>
