@@ -1304,7 +1304,7 @@ if __name__ == "__main__":
     print(f"  💬  NLP model  : {'✅ Ready' if TEXT_MODEL_LOADED else '⚠️  Not loaded (run train_text_model.py)'}")
     print("═" * 58 + "\n")
 
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=False, host="0.0.0.0", port=10000)
     
 
 from flask import Flask, render_template, request, jsonify, session
