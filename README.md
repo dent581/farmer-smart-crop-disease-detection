@@ -1,3 +1,4 @@
+![FarmAdvisor AI](banner.png)
 # 🌿 FarmAdvisor AI — Crop Disease Detection System
 
 An AI-powered crop disease detection and advisory system built with Python, CNN, and Flask. Upload a plant leaf image to instantly detect diseases and get farming advice.
